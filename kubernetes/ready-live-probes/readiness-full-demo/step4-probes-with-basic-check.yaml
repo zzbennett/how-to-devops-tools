@@ -22,9 +22,10 @@ spec:
           protocol: TCP
         readinessProbe:
           failureThreshold: 6
+          successThreshold: 3
           httpGet:
             path: /ready_check
             port: 8080
           initialDelaySeconds: 3
           periodSeconds: 5
-          timeoutSeconds: 5
+          timeoutSeconds: 10

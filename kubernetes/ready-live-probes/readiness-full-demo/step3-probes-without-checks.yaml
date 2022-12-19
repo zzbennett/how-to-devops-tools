@@ -22,6 +22,7 @@ spec:
           protocol: TCP
         readinessProbe:
           failureThreshold: 6
+          successThreshold: 3
           httpGet:
             path: /ready_check
             port: 8080

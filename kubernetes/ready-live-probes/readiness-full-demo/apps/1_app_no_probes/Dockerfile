@@ -6,6 +6,6 @@ COPY requirements.txt requirements.txt
 
 RUN pip install -r ./requirements.txt
 
-COPY . /app-no-checks
+COPY . /app-no-probes
 
 CMD [ "python3", "app-no-probes.py"]
