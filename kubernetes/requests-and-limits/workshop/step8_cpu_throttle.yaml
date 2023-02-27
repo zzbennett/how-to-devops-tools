@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-cpu-stress
+spec:
+  selector:
+    matchLabels:
+      app: app-cpu-stress
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: app-cpu-stress
+    spec:
+      containers:
+      - name: app-cpu-stress
+        image: polinux/stress
+        command: ["stress"]
+        args: ["--cpu", "1"]
+        env:
+        - name: STEP
+          value: "7"
+        resources:
+          requests:
+            cpu: 0.05
+          limits:
+            cpu: 0.1

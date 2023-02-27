@@ -1,0 +1,73 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-req-lim-code
+data:
+  python-script: |-
+    import time
+    import os
+    import sys
+    import logging
+    import random
+    logging.basicConfig(stream=sys.stdout, level=logging.INFO)
+    memory = []
+    
+    initial_allocation = 50   # MB
+    jitter_allocation = 15    # MB
+    leak_allocation = 0       # MB
+
+    def allocate_mem(memory_list, mb):
+      memory_list.append([random.randbytes(1024 * 1024) for i in range(0,mb)])
+      allocated = len(memory[-1])
+      logging.info("allocated " + str(allocated) + "MB")
+
+    def free_mem(memory_list):
+      free_memory = len(memory.pop())
+      logging.info("free " + str(free_memory) + "MB")
+
+
+    # allocate init memory - as loaded modules
+    allocate_mem(memory, initial_allocation)
+
+    while True:
+      mb = random.randint(0, jitter_allocation)
+      allocate_mem(memory, mb)
+      time.sleep(15)
+      free_mem(memory)
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-req-lim-example
+spec:
+  selector:
+    matchLabels:
+      app: app-req-lim-example
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: app-req-lim-example
+    spec:
+      containers:
+      - name: app-req-lim-example
+        image: python:3.11-alpine
+        name: python
+        command: ["python"]
+        args: ["/usr/share/app/code.py"]
+        volumeMounts:
+          - name: app-req-lim-code
+            mountPath: /usr/share/app/code.py
+            subPath: python-script
+        env:
+        - name: STEP
+          value: "4"
+        resources:
+          requests:
+            cpu: 0.2
+            memory: 70M
+      volumes:
+      - name: app-req-lim-code
+        configMap:
+          name: app-req-lim-code

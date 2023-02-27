@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-req-lim-example
+spec:
+  selector:
+    matchLabels:
+      app: app-req-lim-example
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: app-req-lim-example
+    spec:
+      containers:
+      - name: app-req-lim-example
+        image: python:3.11-alpine
+        name: python
+        command: ["python"]
+        args: ["/usr/share/app/code.py"]
+        volumeMounts:
+          - name: app-req-lim-code
+            mountPath: /usr/share/app/code.py
+            subPath: python-script
+        env:
+        - name: STEP
+          value: "2"
+        resources:
+          requests:
+            cpu: 0.2
+            memory: 52M
+      volumes:
+      - name: app-req-lim-code
+        configMap:
+          name: app-req-lim-code
+
